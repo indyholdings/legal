@@ -10,6 +10,12 @@ Yahoo price feed ─► Signal engine (S1/S2/S3) ─► SQLite journal ─┬─
                                                                  └─► MCP server iq-lab ◄─► Claude + Claude in Chrome ─► IQ Option PRACTICE
 ```
 
+## ⚡ Quick start (เร็วที่สุด)
+1. Google Sheet: วาง `apps_script/Code.gs` ใน Extensions → Apps Script → Run `setup` → Deploy เป็น Web app แล้ว copy URL `/exec`
+2. Mac/Linux: `./start.sh "<URL /exec>"` · Windows: `start.bat "<URL /exec>"`
+   (ติดตั้ง → test → backtest → เปิด engine + dashboard ให้ในคำสั่งเดียว)
+3. เปิด Claude ในโฟลเดอร์ `iq-lab/` แล้วพิมพ์ **"start trading session"** (IQ ต้องอยู่ที่ Practice)
+
 ## ติดตั้ง (ครั้งเดียว ~20 นาที)
 
 **1. Python 3.11+** บนเครื่องที่เปิด Chrome ไว้
