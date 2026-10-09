@@ -1,0 +1,111 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>IQ Lab Desk</title>
+<style>
+:root{--page:#f9f9f7;--surface:#fcfcfb;--line:#e6e5e1;--ink:#0b0b0b;--ink2:#52514e;--muted:#898781;
+--s1:#2a78d6;--good:#0ca30c;--warn:#fab219;--crit:#d03b3b;--seq0:#f0efec;--seq1:#cde2fb;--seq2:#86b6ef;--seq3:#2a78d6;--seq4:#184f95}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--page:#0d0d0d;--surface:#1a1a19;--line:#2c2c2a;--ink:#fff;--ink2:#c3c2b7;
+--s1:#3987e5;--seq0:#383835;--seq1:#184f95;--seq2:#2a78d6;--seq3:#5598e7;--seq4:#9ec5f4}}
+:root[data-theme="dark"]{--page:#0d0d0d;--surface:#1a1a19;--line:#2c2c2a;--ink:#fff;--ink2:#c3c2b7;--s1:#3987e5;--seq0:#383835;--seq1:#184f95;--seq2:#2a78d6;--seq3:#5598e7;--seq4:#9ec5f4}
+*{box-sizing:border-box}body{margin:0;background:var(--page);color:var(--ink);font:14px/1.45 system-ui,-apple-system,"Segoe UI","Noto Sans Thai",sans-serif}
+header{display:flex;flex-wrap:wrap;gap:8px 16px;align-items:baseline;padding:16px 20px 4px}
+h1{font-size:18px;margin:0}.sub{color:var(--ink2);font-size:13px}
+main{display:grid;gap:12px;padding:12px 20px 24px;grid-template-columns:repeat(12,1fr)}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:14px;min-width:0}
+.card h2{font-size:12px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;color:var(--ink2);margin:0 0 10px}
+.kpi{grid-column:span 2}.kpi .v{font-size:26px;font-weight:650;font-variant-numeric:tabular-nums}.kpi .d{color:var(--ink2);font-size:12px}
+.w4{grid-column:span 4}.w5{grid-column:span 5}.w6{grid-column:span 6}.w7{grid-column:span 7}.w8{grid-column:span 8}.w12{grid-column:span 12}
+@media (max-width:1100px){.kpi{grid-column:span 4}.w4,.w5,.w6,.w7,.w8{grid-column:span 12}}
+@media (max-width:600px){main{padding:12px 16px}.kpi{grid-column:span 6}}
+table{width:100%;border-collapse:collapse;font-variant-numeric:tabular-nums}th,td{text-align:left;padding:6px 8px;border-bottom:1px solid var(--line);vertical-align:top}
+th{color:var(--muted);font-weight:500;font-size:12px}.scroll{overflow-x:auto}
+.pill{display:inline-flex;gap:4px;align-items:center;padding:1px 8px;border-radius:999px;font-size:12px;border:1px solid var(--line);white-space:nowrap}
+.pill.SIGNAL{border-color:var(--s1);color:var(--s1);font-weight:600}.pill.WIN{color:var(--good);border-color:var(--good)}
+.pill.LOSS{color:var(--crit);border-color:var(--crit)}.pill.block{color:var(--crit);border-color:var(--crit)}
+.big{font-size:20px;font-weight:650}.muted{color:var(--muted)}.ink2{color:var(--ink2)}
+.bar{height:8px;background:var(--seq0);border-radius:4px;overflow:hidden}.bar>i{display:block;height:100%;background:var(--s1);border-radius:4px}
+.sig{display:flex;justify-content:space-between;gap:12px;padding:10px 0;border-bottom:1px solid var(--line)}.sig:last-child{border:0}
+.cd{font-size:22px;font-weight:650;font-variant-numeric:tabular-nums}
+svg text{fill:var(--muted);font-size:11px}#tip{position:fixed;pointer-events:none;background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:6px 8px;font-size:12px;display:none;box-shadow:0 2px 8px rgba(0,0,0,.15)}
+.heat td{text-align:center;padding:4px;font-size:12px;border:2px solid var(--surface);border-radius:4px}
+</style>
+</head>
+<body>
+<header><h1>IQ Lab Desk</h1><span class="sub" id="hb">connecting…</span>
+<span class="sub">Demo research · ไม่ใช่เงินจริง</span></header>
+<main>
+  <section class="card kpi"><h2>Win rate (paper)</h2><div class="v" id="k-wr">–</div><div class="d" id="k-wr-d"></div></section>
+  <section class="card kpi"><h2>Lower 95%</h2><div class="v" id="k-lb">–</div><div class="d" id="k-lb-d"></div></section>
+  <section class="card kpi"><h2>Gate progress</h2><div class="v" id="k-n">–</div><div class="bar"><i id="k-bar" style="width:0"></i></div></section>
+  <section class="card kpi"><h2>P&amp;L today</h2><div class="v" id="k-pnl">–</div><div class="d" id="k-pnl-d"></div></section>
+  <section class="card kpi"><h2>Win rate (IQ demo)</h2><div class="v" id="k-iq">–</div><div class="d" id="k-iq-d"></div></section>
+  <section class="card kpi"><h2>Risk</h2><div class="v" id="k-risk">–</div><div class="d" id="k-risk-d"></div></section>
+
+  <section class="card w5"><h2>🎯 ยิงสัญญาณอะไรอยู่ (open)</h2><div id="open"></div></section>
+  <section class="card w7"><h2>👀 กำลังมองหาอะไร (watchlist)</h2><div class="scroll"><table id="watch"></table></div></section>
+
+  <section class="card w8"><h2>Equity curve (paper P&amp;L, USD)</h2><div id="eq"></div></section>
+  <section class="card w4"><h2>Win rate by setup</h2><div id="setups"></div></section>
+
+  <section class="card w6"><h2>Win rate by hour (Thai time)</h2><div class="scroll"><table class="heat" id="hours"></table></div></section>
+  <section class="card w6"><h2>Latest daily review</h2><div id="review" class="ink2">ยังไม่มี review</div></section>
+
+  <section class="card w12"><h2>Trading journal (latest 25)</h2><div class="scroll"><table id="recent"></table></div></section>
+</main>
+<div id="tip"></div>
+<script>
+const $=id=>document.getElementById(id), pct=v=>v==null?'–':(v*100).toFixed(1)+'%', usd=v=>(v<0?'-':'+')+'$'+Math.abs(Number(v||0)).toFixed(2);
+const esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const th=t=>new Date(t).toLocaleString('th-TH',{timeZone:'Asia/Bangkok',hour:'2-digit',minute:'2-digit',day:'2-digit',month:'short'});
+const tip=$('tip');function showTip(e,h){tip.innerHTML=h;tip.style.display='block';tip.style.left=Math.min(e.clientX+12,innerWidth-200)+'px';tip.style.top=(e.clientY+12)+'px'}
+function hideTip(){tip.style.display='none'}
+let S=null;
+function render(s){S=s;const p=s.paper,r=s.risk,be=p.breakeven;
+ const age=s.heartbeat?Math.round((Date.now()-new Date(s.heartbeat))/1000):null;
+ $('hb').textContent=`rules v${s.rule_version} · engine heartbeat ${age==null?'never':age+'s ago'} · session ${s.session_hours[0]}:00–${s.session_hours[1]}:00 TH`;
+ $('k-wr').textContent=pct(p.winrate);$('k-wr-d').textContent=`${p.wins}W / ${p.losses}L · breakeven ${pct(be)}`;
+ $('k-lb').textContent=pct(p.n?p.wr_lower95:null);$('k-lb-d').textContent=p.n?(p.wr_lower95>be?'✅ above breakeven':'below breakeven — no proven edge yet'):'no data';
+ $('k-n').textContent=p.gate.progress_trades;$('k-bar').style.width=Math.min(100,p.n/5)+'%';
+ $('k-pnl').textContent=usd(r.pnl_today);$('k-pnl-d').textContent=`${r.trades_today} trades · ${(r.pnl_today_pct*100).toFixed(2)}% · stake $${r.stake}`;
+ $('k-iq').textContent=pct(s.iq.winrate);$('k-iq-d').textContent=`${s.iq.n} executed on IQ · ${usd(s.iq.pnl)}`;
+ $('k-risk').innerHTML=r.blocked?'<span class="pill block">⛔ STOP</span>':'<span class="pill">✅ OK</span>';$('k-risk-d').textContent=r.blocked||`${r.consec_losses} losses in a row`;
+ $('open').innerHTML=s.open.length?s.open.map(t=>`<div class="sig"><div><div class="big">${esc(t.asset)} ${t.direction==='CALL'?'▲ CALL':'▼ PUT'}</div>
+  <div class="ink2">${esc(t.setup)} · ${t.expiry_min}m · conf ${(t.confidence*100).toFixed(0)}% · entry ${t.entry_price}</div>
+  <div class="muted">${t.iq_executed?'✅ placed on IQ demo':'⏳ waiting for IQ execution'}</div></div>
+  <div style="text-align:right"><div class="cd" data-exp="${t.expiry_at}">–</div><div class="muted">to expiry</div></div></div>`).join(''):'<div class="muted">No open signals — scanning…</div>';
+ $('watch').innerHTML='<tr><th>Asset</th><th>Status</th><th>Read</th><th>Updated</th></tr>'+s.watchlist.map(w=>`<tr><td><b>${esc(w.asset)}</b></td>
+  <td><span class="pill ${esc(w.status)}">${esc(w.status)}</span></td><td class="ink2">${esc(w.detail)}</td><td class="muted">${th(w.updated_at)}</td></tr>`).join('');
+ equity(p.equity);setups(p.by_setup,be);hours(p.by_hour_th,be);
+ const rv=s.review[0];$('review').innerHTML=rv?`<b>${esc(rv.date)}</b><p>${esc(rv.summary)}</p><p><b>Lessons</b><br>${esc(rv.lessons)}</p>${rv.proposed_changes?`<p><b>Proposed</b><br>${esc(rv.proposed_changes)}</p>`:''}`:'ยังไม่มี review';
+ $('recent').innerHTML='<tr><th>#</th><th>Time</th><th>Asset</th><th>Dir</th><th>Setup</th><th>Exp</th><th>Entry→Exit</th><th>Paper</th><th>IQ</th><th>P&L</th><th>Lesson</th></tr>'+
+  s.recent.map(t=>`<tr><td class="muted">${t.id}</td><td>${th(t.entry_at)}</td><td>${esc(t.asset)}</td><td>${t.direction}</td><td>${esc(t.setup.split('_')[0])}</td><td>${t.expiry_min}m</td>
+  <td>${t.entry_price} → ${t.exit_price??'–'}</td><td><span class="pill ${t.status}">${t.status}</span></td><td>${t.iq_result?`<span class="pill ${t.iq_result}">${t.iq_result}</span>`:'<span class="muted">–</span>'}</td>
+  <td>${usd(t.pnl)}</td><td class="ink2">${esc(t.lesson)}</td></tr>`).join('');tick();}
+function equity(eq){const el=$('eq');if(!eq.length){el.innerHTML='<div class="muted">No resolved trades yet</div>';return}
+ const W=el.clientWidth||600,H=220,L=48,R=10,T=10,B=24;const ys=eq.map(e=>e[1]).concat([0]);let lo=Math.min(...ys),hi=Math.max(...ys);if(hi===lo){hi+=1;lo-=1}
+ const x=i=>L+(eq.length===1?0:i*(W-L-R)/(eq.length-1)),y=v=>T+(hi-v)*(H-T-B)/(hi-lo);
+ const ticks=[lo,(lo+hi)/2,hi].map(v=>`<line x1="${L}" x2="${W-R}" y1="${y(v)}" y2="${y(v)}" stroke="var(--line)"/><text x="${L-6}" y="${y(v)+4}" text-anchor="end">${v.toFixed(0)}</text>`).join('');
+ const d=eq.map((e,i)=>`${i?'L':'M'}${x(i).toFixed(1)},${y(e[1]).toFixed(1)}`).join('');
+ el.innerHTML=`<svg width="${W}" height="${H}" role="img" aria-label="Equity curve">${ticks}<line x1="${L}" x2="${W-R}" y1="${y(0)}" y2="${y(0)}" stroke="var(--muted)" stroke-dasharray="3 3"/>
+ <path d="${d}" fill="none" stroke="var(--s1)" stroke-width="2" stroke-linejoin="round"/><line id="xh" y1="${T}" y2="${H-B}" stroke="var(--muted)" visibility="hidden"/>
+ <circle id="xd" r="4" fill="var(--s1)" stroke="var(--surface)" stroke-width="2" visibility="hidden"/><text x="${L}" y="${H-6}">trade 1</text><text x="${W-R}" y="${H-6}" text-anchor="end">trade ${eq.length}</text>
+ <rect x="${L}" y="${T}" width="${W-L-R}" height="${H-T-B}" fill="transparent" id="hit"/></svg>`;
+ const svg=el.querySelector('svg');svg.querySelector('#hit').onmousemove=e=>{const b=svg.getBoundingClientRect();const i=Math.max(0,Math.min(eq.length-1,Math.round((e.clientX-b.left-L)/((W-L-R)/Math.max(1,eq.length-1)))));
+ const xh=svg.querySelector('#xh'),xd=svg.querySelector('#xd');xh.setAttribute('x1',x(i));xh.setAttribute('x2',x(i));xh.setAttribute('visibility','visible');xd.setAttribute('cx',x(i));xd.setAttribute('cy',y(eq[i][1]));xd.setAttribute('visibility','visible');
+ showTip(e,`trade ${i+1} · ${th(eq[i][0])}<br><b>${usd(eq[i][1])}</b>`)};svg.querySelector('#hit').onmouseleave=()=>{hideTip();svg.querySelector('#xh').setAttribute('visibility','hidden');svg.querySelector('#xd').setAttribute('visibility','hidden')}}
+function setups(g,be){const k=Object.keys(g);if(!k.length){$('setups').innerHTML='<div class="muted">No data</div>';return}
+ $('setups').innerHTML=k.map(s=>{const v=g[s];return `<div style="margin-bottom:12px" onmousemove="showTip(event,'${s}<br>${v.wins}W/${v.losses}L · lower95 ${pct(v.wr_lower95)}')" onmouseleave="hideTip()">
+ <div style="display:flex;justify-content:space-between"><span>${s.split('_').slice(0,2).join(' ')}</span><span><b>${pct(v.winrate)}</b> <span class="muted">n=${v.n}</span></span></div>
+ <div class="bar" style="position:relative"><i style="width:${(v.winrate||0)*100}%"></i><span title="breakeven" style="position:absolute;top:-3px;bottom:-3px;left:${be*100}%;width:2px;background:var(--ink)"></span></div></div>`}).join('')+`<div class="muted">▏ = breakeven ${pct(be)}</div>`}
+function hours(g,be){const hs=Object.keys(g);if(!hs.length){$('hours').innerHTML='<tr><td class="muted">No data</td></tr>';return}
+ const col=v=>v.n<10?'var(--seq0)':v.winrate<be?'var(--seq1)':v.winrate<be+.04?'var(--seq2)':v.winrate<be+.08?'var(--seq3)':'var(--seq4)';
+ const ink=v=>v.n<10||v.winrate<be+.04?'var(--ink)':'#fff';
+ $('hours').innerHTML='<tr>'+hs.map(h=>`<th style="text-align:center">${h}</th>`).join('')+'</tr><tr>'+hs.map(h=>{const v=g[h];return `<td style="background:${col(v)};color:${ink(v)}" onmousemove="showTip(event,'${h}:00 TH · ${v.wins}W/${v.losses}L')" onmouseleave="hideTip()">${pct(v.winrate)}<br><span style="opacity:.75">n=${v.n}</span></td>`}).join('')+'</tr>'+
+ '<tr><td colspan="99" class="muted" style="text-align:left;border:0">lighter = weaker · grey = fewer than 10 trades</td></tr>'}
+function tick(){document.querySelectorAll('[data-exp]').forEach(el=>{const s=Math.round((new Date(el.dataset.exp)-Date.now())/1000);el.textContent=s>0?`${Math.floor(s/60)}:${String(s%60).padStart(2,'0')}`:'resolving…'})}
+async function load(){try{render(await (await fetch('/api/state')).json())}catch(e){$('hb').textContent='dashboard offline: '+e}}
+load();setInterval(load,5000);setInterval(tick,1000);addEventListener('resize',()=>S&&equity(S.paper.equity));
+</script>
+</body></html>

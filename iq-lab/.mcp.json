@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "iq-lab": {
+      "command": "python",
+      "args": ["-m", "iqlab", "mcp"]
+    }
+  }
+}
